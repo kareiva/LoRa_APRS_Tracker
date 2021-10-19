@@ -37,5 +37,11 @@
 		"start_delay": 0,
 		"end_delay": 0,
 		"reverse":false
+	},
+	"wifi_ap":
+	{
+		"active": "true",
+		"ssid": "Cloud2",
+		"pass": "karmagerinas"
 	}
 }

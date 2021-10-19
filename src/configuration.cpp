@@ -69,6 +69,13 @@ Configuration ConfigurationManagement::readConfiguration() {
   conf.ptt.end_delay   = data["ptt_output"]["end_delay"] | 0;
   conf.ptt.reverse     = data["ptt_output"]["reverse"] | false;
 
+  if(data.containsKey("wifi_ap") && data["wifi_ap"].containsKey("active"))
+    conf.wifi_ap.active				= data["wifi_ap"]["active"] | false;
+  if(data.containsKey("wifi_ap") && data["wifi_ap"].containsKey("ssid"))
+    conf.wifi_ap.ssid				= data["wifi_ap"]["ssid"].as<String>();
+  if(data.containsKey("wifi_ap") && data["wifi_ap"].containsKey("pass"))
+    conf.wifi_ap.pass				= data["wifi_ap"]["pass"].as<String>();
+
   return conf;
 }
 
@@ -110,6 +117,10 @@ void ConfigurationManagement::writeConfiguration(Configuration conf) {
   data["ptt_out"]["start_delay"] = conf.ptt.start_delay;
   data["ptt_out"]["end_delay"]   = conf.ptt.end_delay;
   data["ptt_out"]["reverse"]     = conf.ptt.reverse;
+
+  data["wifi_ap"]["active"]		 = conf.wifi_ap.active;
+  data["wifi_ap"]["ssid"]		 = conf.wifi_ap.ssid;
+  data["wifi_ap"]["pass"]		 = conf.wifi_ap.pass;
 
   serializeJson(data, file);
   file.close();

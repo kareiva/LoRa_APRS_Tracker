@@ -12,7 +12,13 @@
 #include "pins.h"
 #include "power_management.h"
 
+#include "ESP-Config.h"
+#include <ESPAsyncWebServer.h>
+#include <SPIFFS.h>
+
 Configuration Config;
+
+AsyncWebServer server(80);
 
 PowerManagement powerManagement;
 OneButton       userButton = OneButton(BUTTON_PIN, true, true);
@@ -72,10 +78,46 @@ void setup() {
     digitalWrite(Config.ptt.io_pin, Config.ptt.reverse ? HIGH : LOW);
   }
 
-  // make sure wifi and bt is off as we don't need it:
-  WiFi.mode(WIFI_OFF);
-  btStop();
+  if (Config.wifi_ap.active)
+  {
+    char ssid[32];
+    char pass[64];
+    Config.wifi_ap.ssid.toCharArray(ssid,32);
+    Config.wifi_ap.pass.toCharArray(pass,64);
+    WiFi.begin(ssid, pass);
+    while (WiFi.status() != WL_CONNECTED) {
+        show_display("WIFI", "Connecting to " + Config.wifi_ap.ssid + "...", 1000);
+      }
+    logPrintlnI("WiFi connected to " + Config.wifi_ap.ssid);
+    logPrintlnI("WiFi IP address: " + WiFi.localIP().toString());
+    show_display("WIFI",
+      "Connected to " + Config.wifi_ap.ssid + "! ",
+      "IP address: " + WiFi.localIP().toString() + "! ", 2000);
 
+    ConfigPage page("page", "Page", "LoRa APRS Tracker by OE5BPA (Peter Buchegger)");
+    ConfigHTML    html;
+    ConfigFactory fact;
+
+    html.addPage(&page);
+    fact.addPage(&page);
+
+    server.begin();
+    html.registerWebServer(server, "/");
+      server.onNotFound([](AsyncWebServerRequest *request) {
+        request->send(404, "text/plain", "Not found");
+      });
+
+    server.on("/tracker.json", HTTP_GET, [](AsyncWebServerRequest *request) {
+      request->send(SPIFFS, "/tracker.json", "text/json");
+    });
+    Serial.println("HTTP server started");
+  }
+  else
+  // make sure wifi and bt is off as we don't need it:
+  {
+    WiFi.mode(WIFI_OFF);
+  }
+  btStop();
   if (Config.beacon.button_tx) {
     // attach TX action to user button (defined by BUTTON_PIN)
     userButton.attachClick(handle_tx_click);

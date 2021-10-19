@@ -59,6 +59,15 @@ public:
     bool reverse;
   };
 
+  class WiFi_AP
+  {
+  public:
+	WiFi_AP() : active(false), ssid(""), pass("") {}
+	bool active;
+	String ssid;
+    String pass;
+  };
+
   Configuration() : callsign("NOCALL-10"), debug(false), enhance_precision(true){};
 
   String       callsign;
@@ -68,6 +77,7 @@ public:
   Smart_Beacon smart_beacon;
   LoRa         lora;
   PTT          ptt;
+  WiFi_AP      wifi_ap;
 };
 
 class ConfigurationManagement {
