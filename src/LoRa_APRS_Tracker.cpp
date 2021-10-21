@@ -94,23 +94,33 @@ void setup() {
       "Connected to " + Config.wifi_ap.ssid + "! ",
       "IP address: " + WiFi.localIP().toString() + "! ", 2000);
 
-    ConfigPage page("page", "Page", "LoRa APRS Tracker by OE5BPA (Peter Buchegger)");
+    ConfigPage page("index", "Page", "LoRa APRS Tracker by OE5BPA (Peter Buchegger)");
+    ConfigSection section(page, "section", "Section A", "This is an example section: A.");
+    ConfigString  s(section, "string", "String", "This is a string example", "teststring");
+    ConfigBool    bt(section, "bool_true", "Boolean", "This is a bool example", true);
+    ConfigBool    bf(section, "bool_false", "Boolean", "This is a 2. bool example", false);
+    ConfigInt     i(section, "int", "Int", "This is a int example", 0);
+    ConfigDecimal d(section, "decimal", "Decimal", "This is a decimal example", 1234.5678, 6);
+    ConfigSection section_hello(page, "hello_world", "Hello World");
+    ConfigString  hello(section_hello, "hello", "Hello", "This is a hello world!", "world");
     ConfigHTML    html;
     ConfigFactory fact;
 
     html.addPage(&page);
     fact.addPage(&page);
 
-    server.begin();
     html.registerWebServer(server, "/");
-      server.onNotFound([](AsyncWebServerRequest *request) {
-        request->send(404, "text/plain", "Not found");
-      });
+
+    server.onNotFound([](AsyncWebServerRequest *request) {
+      request->send(404, "text/plain", "Not found");
+    });
 
     server.on("/tracker.json", HTTP_GET, [](AsyncWebServerRequest *request) {
       request->send(SPIFFS, "/tracker.json", "text/json");
     });
-    Serial.println("HTTP server started");
+    server.begin();
+
+    logPrintlnI("HTTP server started");
   }
   else
   // make sure wifi and bt is off as we don't need it:
